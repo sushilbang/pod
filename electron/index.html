@@ -3,68 +3,43 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src file:">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; media-src file:">
   <title>POD Studio</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="renderer.js"></script>
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar" aria-label="Studio navigation">
-      <div class="brand-lockup"><div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div><strong>POD<span class="brand-dot">.</span></strong><small>STUDIO</small></div></div>
-      <div class="sidebar-group-label">WORKSPACE</div>
-      <nav class="side-nav" aria-label="Workspace">
-        <a class="nav-link active" href="#workspace"><span class="nav-glyph glyph-grid" aria-hidden="true"></span>Create episode</a>
-        <a class="nav-link" href="#connections"><span class="nav-glyph glyph-sliders" aria-hidden="true"></span>Connections</a>
-        <a class="nav-link" href="#exports"><span class="nav-glyph glyph-folder" aria-hidden="true"></span>Exports</a>
+    <header class="app-header">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>POD<span class="brand-period">.</span><small>STUDIO</small></span></div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-button is-active" type="button" data-view="chat" aria-current="page">Chat</button>
+        <button class="nav-button" type="button" data-view="podcasts">Podcasts <span id="podcast-count" class="nav-count" hidden>0</span></button>
+        <button class="nav-button" type="button" data-view="docs">Docs</button>
       </nav>
-      <div class="sidebar-spacer"></div>
-      <div class="local-card"><span class="live-dot" aria-hidden="true"></span><div><strong>Local workspace</strong><p>Finished episodes save on this computer.</p></div></div>
-      <p class="sidebar-foot">POD / DESKTOP STUDIO</p>
-    </aside>
+      <button class="settings-link" id="open-settings" type="button" data-view="settings" aria-label="Open settings"><span class="settings-glyph" aria-hidden="true"></span><span>Settings</span></button>
+    </header>
 
-    <div class="content-shell">
-      <header class="topbar"><div class="breadcrumbs">Workspace <span>/</span> <strong>New episode</strong></div><div class="topbar-meta"><span class="topbar-pulse" aria-hidden="true"></span> READY TO CREATE</div></header>
-      <main id="workspace">
-        <section class="hero" aria-labelledby="hero-title">
-          <div class="hero-copy"><p class="overline"><span class="overline-line"></span> YOUR PRODUCTION SPACE</p><h1 id="hero-title">Ideas sound better<br><em>out loud.</em></h1><p>Turn a PDF into a two voice episode. Choose the source, connect your services, and let the studio do the rest.</p></div>
-          <div class="hero-art" aria-hidden="true"><div class="orbit orbit-outer"></div><div class="orbit orbit-inner"></div><div class="disc"><div class="disc-center"><span></span></div></div><div class="hero-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="art-label">POD / 001</span></div>
-        </section>
-
-        <div class="studio-grid">
-          <div class="production-column">
-            <section class="panel source-panel" aria-labelledby="source-title"><div class="panel-heading"><div><p class="section-kicker">01 <span>/</span> SOURCE MATERIAL</p><h2 id="source-title">Start with a document</h2></div><span class="panel-tag">PDF INPUT</span></div>
-              <button class="drop-zone" id="choose-pdf" type="button"><span class="document-icon" aria-hidden="true"><span>PDF</span></span><span class="drop-copy"><strong id="pdf-name">Choose a PDF to produce</strong><small id="pdf-path">Select a document from your computer</small></span><span class="drop-action">Browse file</span></button>
-              <p class="panel-note">Text based PDFs work best. The studio reads the document locally before creating the script.</p>
-            </section>
-
-            <section class="panel export-panel" id="exports" aria-labelledby="export-title"><div class="panel-heading"><div><p class="section-kicker">02 <span>/</span> DELIVERY</p><h2 id="export-title">Save the finished episode</h2></div><span class="panel-tag">LOCAL OUTPUT</span></div>
-              <div class="destination-row"><div class="destination-icon" aria-hidden="true"></div><div class="destination-copy"><strong>Output folder</strong><span id="output-path">Loading folder…</span></div><button class="button button-secondary" id="choose-folder" type="button">Change folder</button></div>
-              <p class="panel-note">Your MP3 and a copy of the script will appear here.</p>
-            </section>
-
-            <section class="panel production-panel" aria-labelledby="production-title"><div class="panel-heading"><div><p class="section-kicker">03 <span>/</span> PRODUCTION</p><h2 id="production-title">Render your podcast</h2></div><span class="panel-tag" id="status-chip">IDLE</span></div>
-              <div class="signal-line" aria-label="Production stages"><div class="signal-step" id="stage-source"><span class="signal-node">1</span><span>Read PDF</span></div><div class="signal-step" id="stage-script"><span class="signal-node">2</span><span>Write script</span></div><div class="signal-step" id="stage-voice"><span class="signal-node">3</span><span>Build audio</span></div><div class="signal-step" id="stage-export"><span class="signal-node">4</span><span>Export</span></div></div>
-              <div class="render-row"><div class="render-status"><span class="render-status-label">SESSION STATUS</span><p id="status" role="status" aria-live="polite">Ready when you are.</p></div><button class="button button-primary" id="generate" type="button"><span class="play-triangle" aria-hidden="true"></span><span id="generate-label">Generate episode</span></button></div>
-            </section>
-
-            <section class="panel result-panel" id="result" aria-labelledby="result-title" hidden><div class="panel-heading"><div><p class="section-kicker">RENDER COMPLETE</p><h2 id="result-title">Your episode</h2></div><span class="panel-tag ready-tag">READY</span></div><p id="result-path" class="result-path"></p><audio id="audio-preview" controls preload="none" aria-label="Generated podcast preview"></audio><button class="button button-secondary" id="open-folder" type="button">Open output folder</button></section>
+    <main>
+      <section class="view chat-view" id="view-chat" aria-labelledby="chat-title">
+        <div class="chat-layout">
+          <div class="conversation-shell">
+            <div class="conversation-heading"><div><p class="eyebrow"><span class="eyebrow-line"></span> YOUR CREATIVE WORKSPACE</p><h1 id="chat-title">Start with a document.<br><em>End with a story.</em></h1><p>Attach a PDF and tell the studio how your episode should sound.</p></div><div class="heading-art" aria-hidden="true"><span class="art-ring"></span><span class="art-core"></span><span class="art-wave"></span></div></div>
+            <div class="conversation-feed" id="conversation-feed" role="log" aria-live="polite" aria-label="Studio conversation">
+              <div class="message-row assistant-row"><span class="avatar avatar-assistant" aria-hidden="true">P</span><div class="message-body"><span class="message-author">POD Studio</span><div class="message-bubble assistant-bubble"><p>Hi, I’m ready to make your next episode.</p><p>Attach a text based PDF. You can add a direction, such as “explain this for beginners” or “focus on the practical takeaways.” I’ll write a two voice script and render the audio.</p></div></div></div>
+            </div>
+            <form class="composer" id="composer"><div id="attachment" class="attachment" hidden><span class="attachment-icon" aria-hidden="true">PDF</span><span id="attachment-name"></span><button id="remove-pdf" class="attachment-remove" type="button" aria-label="Remove attached PDF">×</button></div><label class="sr-only" for="instruction">Episode direction</label><textarea id="instruction" rows="3" maxlength="2000" placeholder="Describe the episode you want to make…"></textarea><div class="composer-footer"><button class="attach-button" id="choose-pdf" type="button"><span class="clip-glyph" aria-hidden="true"></span> Attach PDF</button><span class="composer-hint">PDF required · direction optional</span><button class="send-button" id="generate" type="submit"><span id="generate-label">Create podcast</span><span aria-hidden="true">↗</span></button></div></form>
           </div>
-
-          <aside class="control-column" id="connections" aria-labelledby="connections-title"><div class="control-heading"><p class="section-kicker">STUDIO CONTROLS</p><h2 id="connections-title">Signal chain</h2><p>Choose the services behind your episode.</p></div>
-            <section class="control-section"><div class="control-number">A / SCRIPT ENGINE</div><label for="provider">Text provider</label><select id="provider"><option value="gemini">Google Gemini</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option></select><p class="control-help" id="provider-help">Summarizes the source and writes the conversation.</p></section>
-            <section class="control-section"><div class="control-number">B / VOICE ENGINE</div><div class="voice-engine"><span class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><div><strong>ElevenLabs</strong><span>Dorothy + Will · two voices</span></div><span class="engine-fixed">FIXED</span></div></section>
-            <section class="control-section keys-section"><div class="control-number">C / CONNECTIONS</div><h3>API credentials</h3><p class="control-help">Keys are encrypted on this computer. Only your chosen provider and ElevenLabs are used for a render.</p>
-              <div class="credential-field" id="google-field"><label for="google-key">Gemini API key <span class="key-state" id="google-state"></span></label><input id="google-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div>
-              <div class="credential-field" id="openai-field" hidden><label for="openai-key">OpenAI API key <span class="key-state" id="openai-state"></span></label><input id="openai-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div>
-              <div class="credential-field" id="anthropic-field" hidden><label for="anthropic-key">Anthropic API key <span class="key-state" id="anthropic-state"></span></label><input id="anthropic-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div>
-              <div class="credential-field"><label for="elevenlabs-key">ElevenLabs API key <span class="key-state" id="elevenlabs-state"></span></label><input id="elevenlabs-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div>
-              <button class="button button-save" id="save-settings" type="button">Save connections</button><button class="text-button" id="clear-keys" type="button">Remove saved keys</button><p id="settings-message" class="settings-message" role="status" aria-live="polite"></p>
-            </section>
-          </aside>
+          <aside class="session-panel" aria-labelledby="session-title"><div class="session-topline"><span class="live-light" aria-hidden="true"></span> LOCAL SESSION</div><h2 id="session-title">Your session</h2><p class="session-intro">A simple path from source material to finished audio.</p><div class="session-item"><span>01 / SOURCE</span><strong id="session-pdf">No PDF attached</strong></div><div class="session-item"><span>02 / SCRIPT ENGINE</span><strong id="session-provider">Google Gemini</strong></div><div class="session-item"><span>03 / DELIVERY</span><strong id="session-output">Loading output folder…</strong></div><div class="session-progress" id="session-progress" hidden><span id="status-chip">IN PROGRESS</span><p id="status" role="status" aria-live="polite">Preparing your episode…</p><div class="stage-track" aria-label="Production progress"><span id="stage-source">Read PDF</span><span id="stage-script">Write script</span><span id="stage-voice">Build audio</span><span id="stage-export">Export</span></div></div><button type="button" class="session-settings" data-view="settings">Manage providers and keys <span aria-hidden="true">↗</span></button></aside>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section class="view library-view" id="view-podcasts" aria-labelledby="podcasts-title" hidden><div class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> YOUR LIBRARY</p><h1 id="podcasts-title">Generated podcasts<span class="heading-dot">.</span></h1><p>Episodes and scripts saved on this computer.</p><button class="outline-button" id="open-library-folder" type="button">Open output folder <span aria-hidden="true">↗</span></button></div><div id="podcast-list" class="podcast-list"></div><div class="empty-state" id="podcasts-empty" hidden><div class="empty-disc" aria-hidden="true"></div><h2>No episodes yet</h2><p>Attach a PDF in Chat to make your first podcast.</p><button class="send-button" type="button" data-view="chat">Go to Chat <span aria-hidden="true">↗</span></button></div></section>
+
+      <section class="view docs-view" id="view-docs" aria-labelledby="docs-title" hidden><div class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> FIELD GUIDE</p><h1 id="docs-title">How POD works<span class="heading-dot">.</span></h1><p>Everything you need to turn a PDF into a two voice episode.</p></div><div class="docs-grid"><div class="docs-steps"><article class="doc-step"><span>01</span><div><h2>Connect your services</h2><p>Open Settings, choose Gemini, OpenAI, or Anthropic, and save that provider’s API key. Add an ElevenLabs key for speech. Keys are encrypted on your computer.</p></div></article><article class="doc-step"><span>02</span><div><h2>Choose an output folder</h2><p>Set the folder in Settings. POD writes the finished MP3 and a plain text script there. The Music folder is used by default.</p></div></article><article class="doc-step"><span>03</span><div><h2>Start the conversation</h2><p>In Chat, attach a text based PDF. Add optional direction about tone, audience, or topics, then select Create podcast.</p></div></article><article class="doc-step"><span>04</span><div><h2>Listen and find your files</h2><p>Follow progress in Chat. When the render finishes, play it there or open Podcasts to revisit the audio and reveal the file on disk.</p></div></article></div><aside class="docs-note"><span>GOOD TO KNOW</span><h2>Before you begin</h2><p>Scanned PDFs need OCR before POD can read them. POD uses the first 40,000 extracted characters to limit API usage.</p><p>The selected text provider receives document text to write the script. ElevenLabs receives the script lines to create speech. Their API usage may incur charges.</p><button type="button" class="outline-button" data-view="settings">Open settings <span aria-hidden="true">↗</span></button></aside></div></section>
+
+      <section class="view settings-view" id="view-settings" aria-labelledby="settings-title" hidden><div class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> STUDIO SETUP</p><h1 id="settings-title">Settings<span class="heading-dot">.</span></h1><p>Choose the services and destination behind your episodes.</p></div><div class="settings-grid"><div class="settings-card"><span class="card-index">01 / SCRIPT ENGINE</span><h2>Text provider</h2><label for="provider">Choose a provider</label><select id="provider"><option value="gemini">Google Gemini</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option></select><p class="field-help" id="provider-help">Summarizes the document and writes the conversation.</p><div class="voice-note"><span class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><div><strong>Voice engine: ElevenLabs</strong><small>Dorothy + Will · two voices</small></div></div></div><div class="settings-card"><span class="card-index">02 / LOCAL DELIVERY</span><h2>Output folder</h2><p class="field-help">MP3 episodes and text scripts are saved here.</p><div class="folder-path" id="output-path">Loading folder…</div><button class="outline-button" id="choose-folder" type="button">Change folder</button></div><div class="settings-card credentials-card"><span class="card-index">03 / PRIVATE CONNECTIONS</span><h2>API credentials</h2><p class="field-help">Saved keys are encrypted on this computer. Only the chosen provider and ElevenLabs are used for each render.</p><div class="credential-field" id="google-field"><label for="google-key">Gemini API key <span class="key-state" id="google-state"></span></label><input id="google-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="credential-field" id="openai-field" hidden><label for="openai-key">OpenAI API key <span class="key-state" id="openai-state"></span></label><input id="openai-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="credential-field" id="anthropic-field" hidden><label for="anthropic-key">Anthropic API key <span class="key-state" id="anthropic-state"></span></label><input id="anthropic-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="credential-field"><label for="elevenlabs-key">ElevenLabs API key <span class="key-state" id="elevenlabs-state"></span></label><input id="elevenlabs-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="settings-actions"><button class="send-button" id="save-settings" type="button">Save connections</button><button class="text-button" id="clear-keys" type="button">Remove saved keys</button></div><p id="settings-message" class="settings-message" role="status" aria-live="polite"></p></div></div></section>
+    </main>
   </div>
 </body>
 </html>

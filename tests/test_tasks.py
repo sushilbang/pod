@@ -1,12 +1,14 @@
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from backend.tasks import MODELS, extract_text, safe_name, text_generator
+from backend.tasks import MODELS, extract_text, run, safe_name, text_generator
 
 
 class LocalGenerationTests(unittest.TestCase):
@@ -56,6 +58,35 @@ class LocalGenerationTests(unittest.TestCase):
                 model=MODELS['anthropic'], max_tokens=5000,
                 messages=[{'role': 'user', 'content': 'prompt'}],
             )
+
+    def test_episode_direction_reaches_title_and_script(self):
+        with tempfile.TemporaryDirectory() as folder:
+            pdf = Path(folder) / 'source.pdf'
+            pdf.write_bytes(b'%PDF')
+            prompts = []
+
+            def generate(prompt, max_tokens=4096):
+                prompts.append(prompt)
+                return ['Summary', 'Useful title', 'Dorothy: Hello there.'][len(prompts) - 1]
+
+            def join_audio(command, **_kwargs):
+                Path(command[-1]).write_bytes(b'audio')
+
+            with patch('backend.tasks.extract_text', return_value='Document text'), \
+                    patch('backend.tasks.text_generator', return_value=generate), \
+                    patch('backend.tasks.ElevenLabs') as speech, \
+                    patch('backend.tasks.subprocess.run', side_effect=join_audio), \
+                    redirect_stdout(StringIO()):
+                speech.return_value.text_to_speech.convert.return_value = [b'clip']
+                run({
+                    'pdf_path': str(pdf), 'output_dir': folder, 'provider': 'gemini',
+                    'llm_key': 'test', 'elevenlabs_key': 'test',
+                    'instruction': 'Explain the practical takeaways for beginners.'
+                })
+            self.assertNotIn('practical takeaways', prompts[0])
+            self.assertIn('practical takeaways', prompts[1])
+            self.assertIn('practical takeaways', prompts[2])
+            self.assertTrue((Path(folder) / 'Useful title.mp3').exists())
 
 
 if __name__ == '__main__':

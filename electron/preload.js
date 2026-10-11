@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('pod', {
   selectPdf: () => ipcRenderer.invoke('dialog:pdf'),
   selectFolder: () => ipcRenderer.invoke('dialog:folder'),
   openFolder: folder => ipcRenderer.invoke('folder:open', folder),
-  generate: pdf => ipcRenderer.invoke('generation:start', pdf),
+  generate: request => ipcRenderer.invoke('generation:start', request),
+  listPodcasts: () => ipcRenderer.invoke('podcasts:list'),
+  revealPodcast: audioPath => ipcRenderer.invoke('podcasts:reveal', audioPath),
   onGeneration: callback => ipcRenderer.on('generation:event', (_event, message) => callback(message))
 });

@@ -13,7 +13,7 @@ npm install
 npm start
 ```
 
-On first launch, choose an output folder, select a text provider, and enter that provider's key and an ElevenLabs key. Then select a PDF and generate. You can save keys for all three text providers and switch between them. The app does not read `.env`.
+On first launch, open Settings, select a text provider, and enter that provider's key and an ElevenLabs key. The Music folder is the default output location; you can change it in Settings. In Chat, attach a PDF, optionally describe the audience or tone, and create the episode. Podcasts lists completed MP3s and scripts, including files in the current output folder from earlier versions. Docs explains the workflow inside the app. You can save keys for all three text providers and switch between them. The app does not read `.env`.
 
 The default text models are `gemini-3.8-flash`, `gpt-6-luna`, and `claude-sonnet-5` respectively. These can be changed in `backend/tasks.py` if your provider account needs a different model.
 

@@ -12,6 +12,60 @@ function settingsPath() {
   return path.join(app.getPath('userData'), 'settings.json');
 }
 
+function episodesPath() {
+  return path.join(app.getPath('userData'), 'episodes.json');
+}
+
+function configuredOutputDir() {
+  return readSettings().outputDir || app.getPath('music');
+}
+
+function readEpisodes() {
+  try {
+    const value = JSON.parse(fs.readFileSync(episodesPath(), 'utf8'));
+    return Array.isArray(value) ? value : [];
+  } catch { return []; }
+}
+
+function listEpisodes() {
+  const byPath = new Map();
+  for (const episode of readEpisodes()) {
+    if (episode && typeof episode.audio_path === 'string' && fs.existsSync(episode.audio_path)) {
+      byPath.set(episode.audio_path, episode);
+    }
+  }
+  const folder = configuredOutputDir();
+  if (fs.existsSync(folder)) {
+    for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+      if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== '.mp3') continue;
+      const audio = path.join(folder, entry.name);
+      const script = path.join(folder, `${path.parse(entry.name).name}.txt`);
+      if (!fs.existsSync(script) || byPath.has(audio)) continue;
+      byPath.set(audio, {
+        title: path.parse(entry.name).name,
+        audio_path: audio,
+        script_path: script,
+        created_at: fs.statSync(audio).mtime.toISOString()
+      });
+    }
+  }
+  return [...byPath.values()]
+    .map(episode => ({ ...episode, audio_url: pathToFileURL(episode.audio_path).href }))
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+}
+
+function rememberEpisode(message) {
+  const episodes = readEpisodes().filter(episode => episode.audio_path !== message.audio_path);
+  episodes.unshift({
+    title: message.title || path.parse(message.audio_path).name,
+    audio_path: message.audio_path,
+    script_path: message.script_path,
+    created_at: new Date().toISOString()
+  });
+  fs.mkdirSync(path.dirname(episodesPath()), { recursive: true });
+  fs.writeFileSync(episodesPath(), JSON.stringify(episodes, null, 2), { mode: 0o600 });
+}
+
 function readSettings() {
   try { return JSON.parse(fs.readFileSync(settingsPath(), 'utf8')); }
   catch { return {}; }
@@ -48,7 +102,7 @@ function ffmpegPath() {
 function createWindow() {
   window = new BrowserWindow({
     width: 1180, height: 820, minWidth: 760, minHeight: 600,
-    backgroundColor: '#071526',
+    backgroundColor: '#0a1c36',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   window.setMenuBarVisibility(false);
@@ -66,7 +120,7 @@ app.on('before-quit', () => { if (worker) worker.kill(); });
 ipcMain.handle('settings:get', () => {
   const settings = readSettings();
   return {
-    outputDir: settings.outputDir || app.getPath('music'),
+    outputDir: configuredOutputDir(),
     provider: settings.provider || 'gemini',
     hasGoogleKey: !!settings.googleKey,
     hasOpenaiKey: !!settings.openaiKey,
@@ -116,19 +170,31 @@ ipcMain.handle('dialog:folder', async () => {
   return result.canceled ? null : result.filePaths[0];
 });
 ipcMain.handle('folder:open', async (_event, folder) => {
-  const settings = readSettings();
-  if (folder !== settings.outputDir) throw new Error('Folder does not match the configured output folder.');
+  if (folder !== configuredOutputDir()) throw new Error('Folder does not match the configured output folder.');
   return shell.openPath(folder);
 });
 
-ipcMain.handle('generation:start', (_event, pdfPath) => {
+ipcMain.handle('podcasts:list', () => listEpisodes());
+ipcMain.handle('podcasts:reveal', (_event, audioPath) => {
+  const episode = listEpisodes().find(item => item.audio_path === audioPath);
+  if (!episode) throw new Error('This podcast is no longer available.');
+  shell.showItemInFolder(episode.audio_path);
+  return true;
+});
+
+ipcMain.handle('generation:start', (_event, request) => {
   if (worker) throw new Error('A podcast is already being generated.');
   const settings = readSettings();
+  const pdfPath = request?.pdfPath;
+  const rawInstruction = request?.instruction ?? '';
+  if (typeof rawInstruction !== 'string' || rawInstruction.length > 2000) throw new Error('Keep the episode direction under 2,000 characters.');
+  const instruction = rawInstruction.trim();
+  const outputDir = configuredOutputDir();
   const provider = settings.provider || 'gemini';
   const keyField = providers[provider];
-  if (!keyField || !settings[keyField] || !settings.elevenlabsKey || !settings.outputDir) throw new Error('Save the selected text provider key, ElevenLabs key, and output folder first.');
+  if (!keyField || !settings[keyField] || !settings.elevenlabsKey) throw new Error('Save the selected text provider key and ElevenLabs key first.');
   if (typeof pdfPath !== 'string' || path.extname(pdfPath).toLowerCase() !== '.pdf' || !fs.existsSync(pdfPath)) throw new Error('Choose a PDF document.');
-  if (!fs.existsSync(settings.outputDir)) throw new Error('The output folder no longer exists.');
+  if (!fs.existsSync(outputDir)) throw new Error('The output folder no longer exists.');
   const child = spawn(pythonPath(), app.isPackaged ? [] : [workerPath()], {
     stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true,
     env: { ...process.env, POD_FFMPEG: ffmpegPath() }
@@ -145,7 +211,11 @@ ipcMain.handle('generation:start', (_event, pdfPath) => {
       try {
         const message = JSON.parse(line);
         if (message.event === 'error') reportedError = true;
-        if (message.event === 'complete' && message.audio_path) message.audio_url = pathToFileURL(message.audio_path).href;
+        if (message.event === 'complete' && message.audio_path) {
+          message.audio_url = pathToFileURL(message.audio_path).href;
+          try { rememberEpisode(message); }
+          catch (error) { console.error('Could not update podcast library:', error); }
+        }
         window?.webContents.send('generation:event', message);
       } catch { /* Ignore non-protocol output. */ }
     }
@@ -159,7 +229,7 @@ ipcMain.handle('generation:start', (_event, pdfPath) => {
     if (code && !reportedError) window?.webContents.send('generation:event', { event: 'error', message: 'Generation stopped unexpectedly. Check that Python dependencies and ffmpeg are installed.' });
   });
   child.stdin.end(JSON.stringify({
-    pdf_path: pdfPath, output_dir: settings.outputDir, provider,
+    pdf_path: pdfPath, output_dir: outputDir, provider, instruction,
     llm_key: decrypt(settings[keyField]), elevenlabs_key: decrypt(settings.elevenlabsKey)
   }));
   return true;

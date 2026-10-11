@@ -113,14 +113,16 @@ def run(request):
         raise ValueError("Choose a text provider and save its API key.")
     generate = text_generator(provider, request["llm_key"])
     speech = ElevenLabs(api_key=request["elevenlabs_key"])
+    instruction = str(request.get("instruction", "")).strip()[:2000]
+    direction = f"\n\nEpisode direction from the user: {instruction}\nKeep factual claims grounded in the document summary." if instruction else ""
 
     emit("progress", message="Reading PDF")
     source_text = extract_text(pdf_path)
     emit("progress", message="Summarizing document")
     summary = generate(f"Analyze this text for a conversational podcast. Summarize the main thesis, key topics, important facts and conclusion faithfully, without inventing facts.\n\n{source_text}")
     emit("progress", message="Writing title and script")
-    title = generate(f"Generate a short, descriptive podcast title (5-10 words). Return only the title without quotes.\n\n{summary}", max_tokens=1024).replace('"', "")
-    script = generate(f"""Write an engaging, approximately 1200-word podcast discussion based on this summary. The two hosts are Dorothy, an insightful analyst, and Will, a curious commentator. Include the main thesis, key topics, important facts and conclusion. Use natural dialogue. Start every spoken line with exactly 'Dorothy:' or 'Will:'. Do not include stage directions or any other text.\n\n{summary}""", max_tokens=5000)
+    title = generate(f"Generate a short, descriptive podcast title (5-10 words). Return only the title without quotes.\n\n{summary}{direction}", max_tokens=1024).replace('"', "")
+    script = generate(f"""Write an engaging, approximately 1200-word podcast discussion based on this summary. The two hosts are Dorothy, an insightful analyst, and Will, a curious commentator. Include the main thesis, key topics, important facts and conclusion. Use natural dialogue. Start every spoken line with exactly 'Dorothy:' or 'Will:'. Do not include stage directions or any other text.\n\n{summary}{direction}""", max_tokens=5000)
 
     lines = []
     for line in script.splitlines():

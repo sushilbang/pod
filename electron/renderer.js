@@ -1,12 +1,34 @@
 const $ = id => document.getElementById(id);
-const providerNames = { gemini: 'Gemini', openai: 'OpenAI', anthropic: 'Anthropic' };
+const providerNames = { gemini: 'Google Gemini', openai: 'OpenAI', anthropic: 'Anthropic' };
 const stages = ['source', 'script', 'voice', 'export'];
 let pdfPath = null;
 let outputDir = null;
 let running = false;
+let progressBubble = null;
+let activeView = 'chat';
 
 function errorMessage(error) {
   return error?.message?.replace(/^Error invoking remote method '[^']+': Error: /, '') || String(error);
+}
+
+function setView(name, focus = true) {
+  if (!['chat', 'podcasts', 'docs', 'settings'].includes(name)) return;
+  activeView = name;
+  for (const view of ['chat', 'podcasts', 'docs', 'settings']) {
+    $('view-' + view).hidden = view !== name;
+  }
+  for (const button of document.querySelectorAll('.main-nav [data-view], .settings-link')) {
+    const current = button.dataset.view === name;
+    button.classList.toggle('is-active', current);
+    if (current) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  }
+  if (name === 'podcasts') loadPodcasts();
+  if (focus) {
+    const heading = $('view-' + name).querySelector('h1');
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+  }
 }
 
 function settingsMessage(message, isError = false) {
@@ -16,9 +38,10 @@ function settingsMessage(message, isError = false) {
 
 function showProvider(provider) {
   for (const name of Object.keys(providerNames)) {
-    $(name === 'gemini' ? 'google-field' : `${name}-field`).hidden = name !== provider;
+    $(name === 'gemini' ? 'google-field' : name + '-field').hidden = name !== provider;
   }
-  $('provider-help').textContent = `${providerNames[provider]} summarizes the document and writes the conversation.`;
+  $('provider-help').textContent = providerNames[provider] + ' summarizes the document and writes the conversation.';
+  $('session-provider').textContent = providerNames[provider];
 }
 
 function keyState(id, saved) {
@@ -31,7 +54,9 @@ async function refresh() {
   const settings = await window.pod.getSettings();
   outputDir = settings.outputDir;
   $('output-path').textContent = outputDir;
+  $('session-output').textContent = outputDir;
   $('output-path').title = outputDir;
+  $('session-output').title = outputDir;
   $('provider').value = settings.provider;
   showProvider(settings.provider);
   keyState('google-state', settings.hasGoogleKey);
@@ -41,50 +66,152 @@ async function refresh() {
   if (!settings.secureStorage) settingsMessage('Encrypted key storage is unavailable on this computer.', true);
 }
 
-function setStage(active, complete = false) {
-  const activeIndex = stages.indexOf(active);
-  for (const [index, stage] of stages.entries()) {
-    const element = $(`stage-${stage}`);
-    element.classList.toggle('is-done', complete || (activeIndex >= 0 && index < activeIndex));
-    element.classList.toggle('is-active', !complete && index === activeIndex);
+function appendMessage(role, text, fileName) {
+  const row = document.createElement('div');
+  row.className = 'message-row ' + (role === 'user' ? 'user-row' : 'assistant-row');
+  const avatar = document.createElement('span');
+  avatar.className = 'avatar ' + (role === 'user' ? 'avatar-user' : 'avatar-assistant');
+  avatar.setAttribute('aria-hidden', 'true');
+  avatar.textContent = role === 'user' ? 'Y' : 'P';
+  const body = document.createElement('div');
+  body.className = 'message-body';
+  const author = document.createElement('span');
+  author.className = 'message-author';
+  author.textContent = role === 'user' ? 'You' : 'POD Studio';
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble ' + (role === 'user' ? 'user-bubble' : 'assistant-bubble');
+  const paragraph = document.createElement('p');
+  paragraph.textContent = text;
+  bubble.append(paragraph);
+  if (fileName) {
+    const file = document.createElement('div');
+    file.className = 'message-file';
+    file.textContent = fileName;
+    bubble.append(file);
   }
+  body.append(author, bubble);
+  row.append(avatar, body);
+  $('conversation-feed').append(row);
+  $('conversation-feed').scrollTop = $('conversation-feed').scrollHeight;
+  return { bubble, paragraph };
+}
+
+function setStage(active, complete = false) {
+  const index = stages.indexOf(active);
+  for (const [position, stage] of stages.entries()) {
+    const element = $('stage-' + stage);
+    element.classList.toggle('is-done', complete || (index >= 0 && position < index));
+    element.classList.toggle('is-active', !complete && position === index);
+  }
+}
+
+function setStatus(message, state = 'running') {
+  $('session-progress').hidden = false;
+  $('status').textContent = message;
+  $('status-chip').textContent = state === 'error' ? 'NEEDS ATTENTION' : state === 'complete' ? 'READY TO LISTEN' : 'IN PROGRESS';
+  if (progressBubble) progressBubble.paragraph.textContent = message;
 }
 
 function setRunning(value) {
   running = value;
   $('generate').disabled = value;
-  $('generate-label').textContent = value ? 'Producing episode…' : 'Generate episode';
-  document.querySelector('.production-panel').classList.toggle('is-running', value);
-  $('status-chip').textContent = value ? 'IN PROGRESS' : 'IDLE';
+  $('choose-pdf').disabled = value;
+  $('remove-pdf').disabled = value;
+  $('instruction').disabled = value;
+  $('generate-label').textContent = value ? 'Producing…' : 'Create podcast';
 }
 
-function setStatus(message, state = 'idle') {
-  $('status').textContent = message;
-  $('status-chip').textContent = state === 'error' ? 'NEEDS ATTENTION' : state === 'complete' ? 'COMPLETE' : state === 'running' ? 'IN PROGRESS' : 'IDLE';
+async function loadPodcasts() {
+  try {
+    const episodes = await window.pod.listPodcasts();
+    const list = $('podcast-list');
+    list.replaceChildren();
+    $('podcasts-empty').hidden = episodes.length !== 0;
+    $('podcast-count').hidden = episodes.length === 0;
+    $('podcast-count').textContent = episodes.length;
+    for (const episode of episodes) {
+      const card = document.createElement('article');
+      card.className = 'podcast-card';
+      const top = document.createElement('div');
+      top.className = 'podcast-card-top';
+      const art = document.createElement('span');
+      art.className = 'podcast-art';
+      art.setAttribute('aria-hidden', 'true');
+      const info = document.createElement('div');
+      const title = document.createElement('h2');
+      title.textContent = episode.title;
+      const date = document.createElement('time');
+      date.dateTime = episode.created_at;
+      date.textContent = new Date(episode.created_at).toLocaleString();
+      info.append(title, date);
+      top.append(art, info);
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = episode.audio_url;
+      audio.setAttribute('aria-label', 'Play ' + episode.title);
+      const location = document.createElement('p');
+      location.className = 'podcast-path';
+      location.textContent = episode.audio_path;
+      const reveal = document.createElement('button');
+      reveal.type = 'button';
+      reveal.textContent = 'Reveal MP3 and script in folder ↗';
+      reveal.addEventListener('click', () => window.pod.revealPodcast(episode.audio_path).catch(error => settingsMessage(errorMessage(error), true)));
+      card.append(top, audio, location, reveal);
+      list.append(card);
+    }
+  } catch (error) {
+    $('podcast-list').replaceChildren();
+    $('podcasts-empty').hidden = false;
+    $('podcasts-empty').querySelector('p').textContent = errorMessage(error);
+  }
 }
+
+document.querySelectorAll('[data-view]').forEach(button => {
+  button.addEventListener('click', () => setView(button.dataset.view));
+});
 
 $('choose-pdf').addEventListener('click', async () => {
   try {
     const selected = await window.pod.selectPdf();
     if (!selected) return;
     pdfPath = selected;
-    $('pdf-name').textContent = selected.split(/[\\/]/).pop();
-    $('pdf-path').textContent = selected;
-    $('pdf-path').title = selected;
-    setStatus('Document selected. Connect your services, then generate.');
-    setStage('source');
-  } catch (error) { setStatus(errorMessage(error), 'error'); }
+    const name = selected.split(/[\\/]/).pop();
+    $('attachment-name').textContent = name;
+    $('attachment').hidden = false;
+    $('session-pdf').textContent = name;
+  } catch (error) { appendMessage('assistant', errorMessage(error)); }
 });
 
-$('choose-folder').addEventListener('click', async () => {
+$('remove-pdf').addEventListener('click', () => {
+  pdfPath = null;
+  $('attachment').hidden = true;
+  $('session-pdf').textContent = 'No PDF attached';
+});
+
+$('composer').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (running) return;
+  if (!pdfPath) {
+    appendMessage('assistant', 'Attach a PDF to start an episode.');
+    $('choose-pdf').focus();
+    return;
+  }
+  const instruction = $('instruction').value.trim();
+  const name = pdfPath.split(/[\\/]/).pop();
+  appendMessage('user', instruction || 'Make a two voice podcast from this document.', name);
+  progressBubble = appendMessage('assistant', 'Reading your PDF and preparing the episode…');
+  setStage('source');
+  setRunning(true);
+  setStatus('Starting production…');
   try {
-    const selected = await window.pod.selectFolder();
-    if (selected) {
-      await window.pod.saveSettings({ outputDir: selected });
-      await refresh();
-      settingsMessage('Output folder saved.');
-    }
-  } catch (error) { settingsMessage(errorMessage(error), true); }
+    await window.pod.saveSettings({ provider: $('provider').value });
+    await window.pod.generate({ pdfPath, instruction });
+    $('instruction').value = '';
+  } catch (error) {
+    setRunning(false);
+    setStatus(errorMessage(error), 'error');
+  }
 });
 
 $('provider').addEventListener('change', async () => {
@@ -92,14 +219,31 @@ $('provider').addEventListener('change', async () => {
   showProvider(provider);
   try {
     await window.pod.saveSettings({ provider });
-    settingsMessage(`${providerNames[provider]} selected for scripts.`);
+    settingsMessage(providerNames[provider] + ' selected for scripts.');
   } catch (error) { settingsMessage(errorMessage(error), true); }
+});
+
+$('choose-folder').addEventListener('click', async () => {
+  try {
+    const selected = await window.pod.selectFolder();
+    if (!selected) return;
+    await window.pod.saveSettings({ outputDir: selected });
+    await refresh();
+    settingsMessage('Output folder saved.');
+    loadPodcasts();
+  } catch (error) { settingsMessage(errorMessage(error), true); }
+});
+
+$('open-library-folder').addEventListener('click', async () => {
+  try { await window.pod.openFolder(outputDir); }
+  catch (error) { appendMessage('assistant', errorMessage(error)); setView('chat'); }
 });
 
 $('save-settings').addEventListener('click', async () => {
   try {
     await window.pod.saveSettings({
-      provider: $('provider').value, outputDir,
+      provider: $('provider').value,
+      outputDir,
       googleKey: $('google-key').value,
       openaiKey: $('openai-key').value,
       anthropicKey: $('anthropic-key').value,
@@ -120,31 +264,10 @@ $('clear-keys').addEventListener('click', async () => {
   } catch (error) { settingsMessage(errorMessage(error), true); }
 });
 
-$('generate').addEventListener('click', async () => {
-  if (running) return;
-  if (!pdfPath) { setStatus('Choose a PDF to get started.', 'error'); $('choose-pdf').focus(); return; }
-  setRunning(true);
-  setStatus('Starting production…', 'running');
-  setStage('source');
-  $('result').hidden = true;
-  $('audio-preview').removeAttribute('src');
-  try {
-    await window.pod.saveSettings({ provider: $('provider').value });
-    await window.pod.generate(pdfPath);
-  } catch (error) {
-    setRunning(false);
-    setStatus(errorMessage(error), 'error');
-  }
-});
-
-$('open-folder').addEventListener('click', async () => {
-  try { await window.pod.openFolder(outputDir); }
-  catch (error) { setStatus(errorMessage(error), 'error'); }
-});
-
 window.pod.onGeneration(message => {
+  if (!progressBubble) progressBubble = appendMessage('assistant', 'Producing your episode…');
   if (message.event === 'progress') {
-    setStatus(message.message, 'running');
+    setStatus(message.message);
     if (message.message.startsWith('Reading')) setStage('source');
     else if (message.message.startsWith('Summarizing') || message.message.startsWith('Writing')) setStage('script');
     else if (message.message.startsWith('Generating speech')) setStage('voice');
@@ -152,17 +275,30 @@ window.pod.onGeneration(message => {
   }
   if (message.event === 'complete') {
     setRunning(false);
-    setStatus('Episode ready. Preview it below or open its folder.', 'complete');
     setStage(null, true);
-    $('result-title').textContent = message.title || 'Your episode';
-    $('result-path').textContent = message.audio_path;
-    $('audio-preview').src = message.audio_url;
-    $('result').hidden = false;
+    setStatus('Episode ready. Listen here or find it in Podcasts.', 'complete');
+    const title = document.createElement('strong');
+    title.textContent = message.title || 'Your episode';
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.preload = 'none';
+    audio.src = message.audio_url;
+    audio.setAttribute('aria-label', 'Generated podcast preview');
+    const reveal = document.createElement('button');
+    reveal.type = 'button';
+    reveal.className = 'bubble-link';
+    reveal.textContent = 'Reveal MP3 and script ↗';
+    reveal.addEventListener('click', () => window.pod.revealPodcast(message.audio_path).catch(error => setStatus(errorMessage(error), 'error')));
+    progressBubble.bubble.append(title, audio, reveal);
+    progressBubble = null;
+    loadPodcasts();
   }
   if (message.event === 'error') {
     setRunning(false);
     setStatus(message.message, 'error');
+    progressBubble = null;
   }
+  $('conversation-feed').scrollTop = $('conversation-feed').scrollHeight;
 });
 
-refresh().catch(error => setStatus(errorMessage(error), 'error'));
+refresh().then(loadPodcasts).catch(error => appendMessage('assistant', errorMessage(error)));
