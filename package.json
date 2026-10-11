@@ -1,0 +1,46 @@
+{
+  "name": "pod-desktop",
+  "version": "1.2.1",
+  "private": true,
+  "description": "Local PDF to podcast desktop app",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": ".venv\\Scripts\\python.exe -m unittest discover -s tests",
+    "package": "node scripts/package.js"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "devDependencies": {
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "app.pod.desktop",
+    "productName": "POD",
+    "files": [
+      "electron/**/*",
+      "backend/tasks.py",
+      "package.json",
+      "node_modules/ffmpeg-static/**/*"
+    ],
+    "asarUnpack": [
+      "backend/tasks.py",
+      "node_modules/ffmpeg-static/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build/worker/pod-worker.exe",
+        "to": "pod-worker.exe"
+      }
+    ],
+    "directories": {
+      "output": "release"
+    }
+  },
+  "allowScripts": {
+    "electron@38.8.6": true,
+    "ffmpeg-static@5.3.0": true
+  }
+}

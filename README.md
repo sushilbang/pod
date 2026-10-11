@@ -1,11 +1,31 @@
-## TLDR;
-It converts your PDFs into short audio content that you would love to listen on go.
+# POD desktop
 
-POD is designed to transform static PDFs into dynamic, summarized conversational podcasts. The core idea behind it is to make information consumption effortless and engaging, especially for users who prefer audio content over reading lengthy documents. By harnessing the power of artificial intelligence, POD automates the process of extracting key insights from PDFs, crafting natural-sounding scripts, and converting them into high-quality audio with distinct voices.
+POD turns a text based PDF into a two voice podcast. It runs as an Electron desktop app with no account, database, server, Redis, or cloud storage. You provide an API key for Gemini, OpenAI, or Anthropic to write the script, plus an ElevenLabs key for speech. The app saves keys using Electron's OS backed encrypted storage. Only the selected text provider key and ElevenLabs key are used for a generation. Output is an MP3 and script text file in the folder you choose.
 
-The application uses the Gemini API for summarization and script generation, distilling complex PDF content into concise, conversational dialogues. For audio production, it integrates the ElevenLabs API (and some more to come) to deliver remarkably realistic text-to-speech output, featuring a two-voice format that sounds like a natural podcast conversation. To handle the computationally intensive tasks without disrupting the user experience, POD employs asynchronous processing with Celery and Redis, queuing long-running jobs.
+## Run locally
 
-## How it works (under the hood)
-When a user hits the submit button, the FastAPI backend instantly creates a database record and dispatches a job ID to the Redis queue, allowing for an immediate response to the frontend while the heavy lifting happens in the background. A dedicated Celery worker, previously deployed on Fly.io (though currently paused due to financial constraints), picks up the job, retrieves the PDF from S3, processes it through the Gemini API for script generation, and makes multiple calls to ElevenLabs for voice-specific audio segments, which are then stitched together into a cohesive MP3 using the pydub library. 
+Requires Node.js 22+ and Python 3.11+.
 
-Checkout the live demo here [link](https://podcast-pro-gilt.vercel.app/demo) :)
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+npm install
+npm start
+```
+
+On first launch, choose an output folder, select a text provider, and enter that provider's key and an ElevenLabs key. Then select a PDF and generate. You can save keys for all three text providers and switch between them. The app does not read `.env`.
+
+The default text models are `gemini-3.8-flash`, `gpt-6-luna`, and `claude-sonnet-5` respectively. These can be changed in `backend/tasks.py` if your provider account needs a different model.
+
+## Build a Windows installer
+
+Install PyInstaller in the virtual environment, then run the package script. The script bundles the Python worker and Electron Builder includes it in the desktop package.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install pyinstaller
+npm run package
+```
+
+The installer is written to `release/`. `ffmpeg` is included through `ffmpeg-static`. Generated files are stored only in the chosen output folder. The keys are saved in Electron's app data directory, encrypted with the operating system's key store. Removing keys in the app deletes their saved values.
+
+Provider and ElevenLabs usage may incur charges on your accounts. PDFs without extractable text need OCR before import. Long documents are limited to the first 40,000 extracted characters to bound API usage.
