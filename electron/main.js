@@ -102,7 +102,7 @@ function ffmpegPath() {
 function createWindow() {
   window = new BrowserWindow({
     width: 1180, height: 820, minWidth: 760, minHeight: 600,
-    backgroundColor: '#0a1c36',
+    backgroundColor: '#f4f4f2',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   window.setMenuBarVisibility(false);

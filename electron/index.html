@@ -36,7 +36,57 @@
 
       <section class="view library-view" id="view-podcasts" aria-labelledby="podcasts-title" hidden><div class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> YOUR LIBRARY</p><h1 id="podcasts-title">Generated podcasts<span class="heading-dot">.</span></h1><p>Episodes and scripts saved on this computer.</p><button class="outline-button" id="open-library-folder" type="button">Open output folder <span aria-hidden="true">↗</span></button></div><div id="podcast-list" class="podcast-list"></div><div class="empty-state" id="podcasts-empty" hidden><div class="empty-disc" aria-hidden="true"></div><h2>No episodes yet</h2><p>Attach a PDF in Chat to make your first podcast.</p><button class="send-button" type="button" data-view="chat">Go to Chat <span aria-hidden="true">↗</span></button></div></section>
 
-      <section class="view docs-view" id="view-docs" aria-labelledby="docs-title" hidden><div class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> FIELD GUIDE</p><h1 id="docs-title">How POD works<span class="heading-dot">.</span></h1><p>Everything you need to turn a PDF into a two voice episode.</p></div><div class="docs-grid"><div class="docs-steps"><article class="doc-step"><span>01</span><div><h2>Connect your services</h2><p>Open Settings, choose Gemini, OpenAI, or Anthropic, and save that provider’s API key. Add an ElevenLabs key for speech. Keys are encrypted on your computer.</p></div></article><article class="doc-step"><span>02</span><div><h2>Choose an output folder</h2><p>Set the folder in Settings. POD writes the finished MP3 and a plain text script there. The Music folder is used by default.</p></div></article><article class="doc-step"><span>03</span><div><h2>Start the conversation</h2><p>In Chat, attach a text based PDF. Add optional direction about tone, audience, or topics, then select Create podcast.</p></div></article><article class="doc-step"><span>04</span><div><h2>Listen and find your files</h2><p>Follow progress in Chat. When the render finishes, play it there or open Podcasts to revisit the audio and reveal the file on disk.</p></div></article></div><aside class="docs-note"><span>GOOD TO KNOW</span><h2>Before you begin</h2><p>Scanned PDFs need OCR before POD can read them. POD uses the first 40,000 extracted characters to limit API usage.</p><p>The selected text provider receives document text to write the script. ElevenLabs receives the script lines to create speech. Their API usage may incur charges.</p><button type="button" class="outline-button" data-view="settings">Open settings <span aria-hidden="true">↗</span></button></aside></div></section>
+      <section class="view docs-view" id="view-docs" aria-labelledby="docs-title" hidden>
+        <div class="page-heading docs-heading">
+          <p class="eyebrow"><span class="eyebrow-line"></span> GUIDE</p>
+          <h1 id="docs-title">How it works</h1>
+          <p>Set up your providers once, then turn any text based PDF into a two voice podcast.</p>
+        </div>
+
+        <div class="docs-layout">
+          <nav class="docs-toc" aria-label="How it works sections">
+            <span>IN THIS GUIDE</span>
+            <a href="#guide-setup">1. Set up</a>
+            <a href="#guide-source">2. Add a source</a>
+            <a href="#guide-render">3. Create the episode</a>
+            <a href="#guide-output">4. Find your files</a>
+            <a href="#guide-privacy">Privacy &amp; limits</a>
+            <a href="#guide-help">Troubleshooting</a>
+          </nav>
+
+          <div class="docs-content">
+            <section class="guide-section" id="guide-setup">
+              <div class="guide-number">01</div>
+              <div><h2>Set up the services</h2><p>Open Settings and select the text provider that will read your document and write the conversation. POD supports Google Gemini, OpenAI, and Anthropic. Paste the API key for the selected provider, then add an ElevenLabs API key for speech.</p><p>You only need one text provider key. You can switch providers later without changing your PDF or output folder.</p><button type="button" class="text-link" data-view="settings">Open Settings →</button></div>
+            </section>
+            <section class="guide-section" id="guide-source">
+              <div class="guide-number">02</div>
+              <div><h2>Add a source document</h2><p>Go to Chat and attach a PDF that contains selectable text. POD extracts up to the first 40,000 characters. Scanned pages and image only PDFs need OCR before the app can read them.</p><div class="guide-tip"><strong>For a better script</strong><span>Use a focused document with clear headings. Remove unrelated appendices when the main content is short.</span></div></div>
+            </section>
+            <section class="guide-section" id="guide-render">
+              <div class="guide-number">03</div>
+              <div><h2>Describe the episode</h2><p>The direction field is optional, but it gives you control over the result. Mention the audience, tone, level of detail, or parts of the document that matter most.</p><div class="prompt-example"><span>EXAMPLE</span><p>Explain this for product managers. Keep it conversational, focus on practical decisions, and end with three takeaways.</p></div><p>Select <strong>Create podcast</strong>. POD reads the PDF, drafts a two voice script, sends each speaker’s lines to ElevenLabs, and combines the clips into one MP3.</p></div>
+            </section>
+            <section class="guide-section" id="guide-output">
+              <div class="guide-number">04</div>
+              <div><h2>Listen and find your files</h2><p>You can play the finished episode directly in Chat. The Podcasts page keeps a local library of generated episodes and lets you reveal each file on disk.</p><p>Every run produces an MP3 and a matching plain text script. Files go to the folder selected in Settings; your Music folder is the default.</p></div>
+            </section>
+
+            <section class="reference-section" id="guide-privacy">
+              <h2>Privacy and usage</h2>
+              <div class="reference-grid"><div><strong>Stored locally</strong><p>Your keys are encrypted by the operating system. Episode records, scripts, and audio stay on this computer.</p></div><div><strong>Sent to providers</strong><p>Document text goes to your chosen text provider. Script lines go to ElevenLabs so it can create the voices.</p></div><div><strong>Provider charges</strong><p>POD uses your own API accounts. Generation may count toward provider quotas or create charges on those accounts.</p></div><div><strong>Document limit</strong><p>Only the first 40,000 extracted characters are used to keep requests manageable and predictable.</p></div></div>
+            </section>
+
+            <section class="reference-section" id="guide-help">
+              <h2>Troubleshooting</h2>
+              <details><summary>The PDF cannot be read</summary><p>Open the file and check whether you can select and copy its text. If you cannot, run OCR on the PDF and attach the new version.</p></details>
+              <details><summary>Generation stops with an API error</summary><p>Check that the selected provider matches the key you saved, that the key is active, and that the account has available quota. Save the key again after correcting it.</p></details>
+              <details><summary>The episode does not appear in Podcasts</summary><p>Confirm the output folder still exists and is accessible. The library shows completed episodes recorded by POD and matching MP3/script pairs in the current output folder.</p></details>
+              <details><summary>I want a different result</summary><p>Return to Chat and give more specific direction about audience, tone, length, or priority topics. The original PDF is never modified.</p></details>
+            </section>
+          </div>
+        </div>
+      </section>
 
       <section class="view settings-view" id="view-settings" aria-labelledby="settings-title" hidden><div class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> STUDIO SETUP</p><h1 id="settings-title">Settings<span class="heading-dot">.</span></h1><p>Choose the services and destination behind your episodes.</p></div><div class="settings-grid"><div class="settings-card"><span class="card-index">01 / SCRIPT ENGINE</span><h2>Text provider</h2><label for="provider">Choose a provider</label><select id="provider"><option value="gemini">Google Gemini</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option></select><p class="field-help" id="provider-help">Summarizes the document and writes the conversation.</p><div class="voice-note"><span class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><div><strong>Voice engine: ElevenLabs</strong><small>Dorothy + Will · two voices</small></div></div></div><div class="settings-card"><span class="card-index">02 / LOCAL DELIVERY</span><h2>Output folder</h2><p class="field-help">MP3 episodes and text scripts are saved here.</p><div class="folder-path" id="output-path">Loading folder…</div><button class="outline-button" id="choose-folder" type="button">Change folder</button></div><div class="settings-card credentials-card"><span class="card-index">03 / PRIVATE CONNECTIONS</span><h2>API credentials</h2><p class="field-help">Saved keys are encrypted on this computer. Only the chosen provider and ElevenLabs are used for each render.</p><div class="credential-field" id="google-field"><label for="google-key">Gemini API key <span class="key-state" id="google-state"></span></label><input id="google-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="credential-field" id="openai-field" hidden><label for="openai-key">OpenAI API key <span class="key-state" id="openai-state"></span></label><input id="openai-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="credential-field" id="anthropic-field" hidden><label for="anthropic-key">Anthropic API key <span class="key-state" id="anthropic-state"></span></label><input id="anthropic-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="credential-field"><label for="elevenlabs-key">ElevenLabs API key <span class="key-state" id="elevenlabs-state"></span></label><input id="elevenlabs-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter or replace key"></div><div class="settings-actions"><button class="send-button" id="save-settings" type="button">Save connections</button><button class="text-button" id="clear-keys" type="button">Remove saved keys</button></div><p id="settings-message" class="settings-message" role="status" aria-live="polite"></p></div></div></section>
     </main>
