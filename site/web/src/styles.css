@@ -106,6 +106,9 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .clip-play:hover { background: var(--blue-dark); }
 .shot-note { margin: 1.1rem auto 0; max-width: 64ch; text-align: center; font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.03em; color: var(--muted); line-height: 1.6; }
 
+/* Clears the last frame's glow (about 3.4rem) with room to spare. */
+.shot-note-end { margin-top: clamp(4.5rem, 8vw, 7rem); }
+
 /* Strip */
 .strip { border-block: 1px solid var(--line); background: var(--white); }
 .strip-in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2.5rem; padding-block: 1.4rem; }

@@ -260,7 +260,7 @@ export default function App() {
             ))}
           </div>
           <div className="wrap">
-            <p className="shot-note" data-reveal>All clips above are scripted mock-ups of the app’s real interface, with sample episodes and a placeholder key. No real document or API call is shown.</p>
+            <p className="shot-note shot-note-end" data-reveal>All clips above are scripted mock-ups of the app’s real interface, with sample episodes and a placeholder key. No real document or API call is shown.</p>
           </div>
         </section>
 
