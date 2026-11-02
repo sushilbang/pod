@@ -144,6 +144,19 @@ async function clips(only) {
     progress(164, 'Joining audio segments\u2026'),
     { at: 174, run: run => emit(run, { event: 'complete', title: 'Q3 strategy for product managers', audio_path: episodePath, audio_url: '' }) }
   ]);
+  // Short hero loop: PDF and direction ready, one click, every stage, finished episode.
+  await clip('hero', 15, 135, [
+    { at: 0, run: async run => { await click(run, 'choose-pdf'); await sleep(120); await typeInto(run, direction); } },
+    { at: 14, run: run => click(run, 'generate') },
+    progress(18, 'Reading your PDF…'),
+    progress(30, 'Summarizing the document…'),
+    progress(44, 'Writing the two voice script…'),
+    progress(58, 'Generating speech 6 of 24…'),
+    progress(68, 'Generating speech 14 of 24…'),
+    progress(78, 'Generating speech 22 of 24…'),
+    progress(88, 'Joining audio segments…'),
+    { at: 98, run: run => emit(run, { event: 'complete', title: 'Q3 strategy for product managers', audio_path: episodePath, audio_url: '' }) }
+  ]);
   await clip('progress', 15, 180, [
     { at: 0, run: async run => { await click(run, 'choose-pdf'); await sleep(120); await typeInto(run, direction); await click(run, 'generate'); } },
     progress(8, 'Reading your PDF…'),

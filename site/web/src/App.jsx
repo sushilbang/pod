@@ -32,7 +32,7 @@ function Words({ text }) {
   ));
 }
 
-function Clip({ src, poster, label }) {
+function Clip({ src, poster, label, eager = false }) {
   const ref = useRef(null);
   const [reduced] = useState(() => matchMedia(reducedQuery).matches);
   // Reduced-motion visitors and browsers that block autoplay get an explicit Play button instead of a still image.
@@ -43,15 +43,54 @@ function Clip({ src, poster, label }) {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) video.play().then(() => setNeedsTap(false)).catch(() => setNeedsTap(true));
       else video.pause();
-    }, { threshold: 0.25 });
+    }, { threshold: eager ? 0.05 : 0.25 });
     observer.observe(video);
     return () => observer.disconnect();
   }, [reduced]);
   const start = () => { ref.current?.play().then(() => setNeedsTap(false)).catch(() => {}); };
   return (
     <div className="clip">
-      <video ref={ref} src={src} poster={poster} muted loop playsInline preload="metadata" controls={reduced} aria-label={label} />
+      <video ref={ref} src={src} poster={poster} muted loop playsInline preload={eager ? 'auto' : 'metadata'} controls={reduced} aria-label={label} />
       {needsTap && <button type="button" className="clip-play" onClick={start}><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor" /></svg>Play demo</button>}
+    </div>
+  );
+}
+
+// Accordion built on <details>: the browser can't animate closing, so open state lives in React and GSAP
+// animates the panel (height + opacity, small and short). Reduced motion toggles instantly.
+function FaqItem({ q, a, isOpen, onToggle }) {
+  const details = useRef(null);
+  const panel = useRef(null);
+  const first = useRef(true);
+
+  useLayoutEffect(() => {
+    if (first.current) { first.current = false; return undefined; }
+    const d = details.current;
+    const p = panel.current;
+    const clear = () => gsap.set(p, { clearProps: 'height,opacity' });
+    if (matchMedia(reducedQuery).matches) { d.open = isOpen; return undefined; }
+    if (isOpen) {
+      d.open = true;
+      gsap.fromTo(p, { height: 0, opacity: 0 }, { height: 'auto', opacity: 1, duration: 0.4, ease: 'power2.out', overwrite: true, onComplete: clear });
+    } else {
+      gsap.to(p, { height: 0, opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: true, onComplete: () => { d.open = false; clear(); } });
+    }
+    return undefined;
+  }, [isOpen]);
+
+  return (
+    <details ref={details} className={isOpen ? 'is-open' : ''}>
+      <summary onClick={event => { event.preventDefault(); onToggle(); }}>{q}</summary>
+      <div className="faq-panel" ref={panel}><p>{a}</p></div>
+    </details>
+  );
+}
+
+function Faq() {
+  const [open, setOpen] = useState(-1);
+  return (
+    <div className="faq" data-reveal>
+      {faqs.map(([q, a], i) => <FaqItem key={q} q={q} a={a} isOpen={open === i} onToggle={() => setOpen(open === i ? -1 : i)} />)}
     </div>
   );
 }
@@ -185,7 +224,7 @@ export default function App() {
           <div className="wrap">
             <figure className="frame hero-shot">
               <div className="frame-bar" aria-hidden="true"><i /><i /><i /><span>POD Studio</span></div>
-              <div className="frame-body"><img src="/media/chat-done.webp" width="1600" height="1000" alt="POD Studio showing a finished episode with an audio player in the conversation" fetchPriority="high" /></div>
+              <div className="frame-body"><Clip eager src="/media/hero.mp4" poster="/media/hero-poster.webp" label="POD Studio turning a PDF into a finished episode: attach, create, stage progress, then an audio player" /></div>
               <figcaption>Scripted mock-up of the real interface, not a recording of a live run</figcaption>
             </figure>
           </div>
@@ -271,11 +310,7 @@ export default function App() {
               <p className="eyebrow" data-reveal>FAQ</p>
               <h2 data-reveal>Questions, answered plainly.</h2>
             </div>
-            <div className="faq" data-reveal>
-              {faqs.map(([q, a]) => (
-                <details key={q} name="faq"><summary>{q}</summary><p>{a}</p></details>
-              ))}
-            </div>
+            <Faq />
           </div>
         </section>
       </main>

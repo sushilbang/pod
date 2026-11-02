@@ -50,6 +50,10 @@ async function run() {
     await win.loadURL(base);
     await sleep(2600);
     await snap(win, `${label}-hero`);
+    console.log(label, 'hero clip after load:', JSON.stringify(await js('(() => { const v = document.querySelector("video"); return { t: +v.currentTime.toFixed(2), paused: v.paused, ready: v.readyState, btn: !!document.querySelector(".clip-play"), err: v.error && v.error.code }; })()')));
+    await js('window.scrollTo(0, 300)'); await sleep(1500);
+    console.log(label, 'hero clip after small scroll:', JSON.stringify(await js('(() => { const v = document.querySelector("video"); return { t: +v.currentTime.toFixed(2), paused: v.paused }; })()')));
+    await js('window.scrollTo(0, 0)');
     const targets = ['#features', '.row:nth-of-type(1)', '.row:nth-of-type(2)', '.row:nth-of-type(3)', '.row:nth-of-type(4)', '.row:nth-of-type(5)', '#how', '#download', '#faq'];
     let i = 0;
     for (const selector of targets) {
@@ -65,6 +69,22 @@ async function run() {
 
   await pass('desktop', 1440, 900);
   await pass('mobile', 390, 844);
+
+  // FAQ accordion: panel heights while opening one item, switching to another, then closing.
+  win.setContentSize(1440, 900);
+  await win.loadURL(base);
+  await sleep(2000);
+  await js('document.querySelector("#faq").scrollIntoView()');
+  await sleep(1200);
+  const faqState = () => js('[...document.querySelectorAll(".faq details")].slice(0, 3).map(d => (d.open ? "open" : "closed") + ":" + Math.round(d.querySelector(".faq-panel").getBoundingClientRect().height)).join("  ")');
+  const clickFaq = index => js(`document.querySelectorAll(".faq summary")[${index}].click()`);
+  console.log('faq initial        ', await faqState());
+  await clickFaq(0); await sleep(120); console.log('faq open 0  +120ms ', await faqState());
+  await sleep(700); console.log('faq open 0  +820ms ', await faqState());
+  await clickFaq(1); await sleep(120); console.log('faq open 1  +120ms ', await faqState());
+  await sleep(700); console.log('faq open 1  +820ms ', await faqState());
+  await clickFaq(1); await sleep(120); console.log('faq close 1 +120ms ', await faqState());
+  await sleep(700); console.log('faq close 1 +820ms ', await faqState());
 
   // Scroll frame times: scroll the whole page over ~5s and record rAF gaps.
   win.setContentSize(1440, 900);
