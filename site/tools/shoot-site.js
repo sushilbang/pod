@@ -59,6 +59,8 @@ async function run() {
     }
     const overflow = await js('document.documentElement.scrollWidth - document.documentElement.clientWidth');
     console.log(label, 'horizontal overflow px:', overflow);
+    // Each clip should have autoplayed (currentTime advanced) while its row was in view.
+    console.log(label, 'clips played:', JSON.stringify(await js('[...document.querySelectorAll("video")].map(v => [v.currentSrc.split("/").pop(), +v.currentTime.toFixed(1), v.error && v.error.code])')));
   }
 
   await pass('desktop', 1440, 900);

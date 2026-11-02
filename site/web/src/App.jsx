@@ -77,19 +77,19 @@ const features = [
     n: '02', title: 'Watch it get made, stage by stage.',
     body: 'While POD works, the session panel shows exactly where it is: reading, scripting, voicing or exporting. When the episode is ready you can play it right inside the conversation.',
     points: ['A dialogue of about 1,200 words between Dorothy and Will', 'Every line is voiced separately for natural turn-taking', 'FFmpeg joins the clips without re-encoding'],
-    media: { type: 'image', src: '/media/progress.webp', alt: 'POD Studio chat view mid-generation with the stage tracker highlighting Build audio', caption: 'Scripted mock-up: no real document or API call' }
+    media: { type: 'video', src: '/media/progress.mp4', poster: '/media/progress-poster.webp', label: 'The session panel moving through read, script, audio and export until the episode appears', caption: 'Scripted mock-up: no real document or API call' }
   },
   {
     n: '03', title: 'A library that lives on your disk.',
     body: 'Every episode lands as an MP3 plus a plain-text script in a folder you choose. The Podcasts page lists them, plays them, and opens the file in Explorer with one click.',
     points: ['Defaults to your Music folder, change it any time', 'Matching MP3 and script pairs are picked up automatically', 'No account, no cloud copy, nothing to sync'],
-    media: { type: 'image', src: '/media/library.webp', alt: 'The Podcasts library listing four episodes with players and reveal links', caption: 'Scripted mock-up with sample episodes' }
+    media: { type: 'video', src: '/media/library.mp4', poster: '/media/library-poster.webp', label: 'The Podcasts library starting empty and filling with episodes, then scrolling through them', caption: 'Scripted mock-up with sample episodes' }
   },
   {
     n: '04', title: 'Bring your own AI accounts.',
     body: 'Pick Google Gemini, OpenAI or Anthropic to write the script, and ElevenLabs for the voices. Keys are encrypted by Windows on your machine and used only for the render you start.',
     points: ['Switch script providers without touching your PDF', 'No sign-up and no POD server in between', 'Generation is billed by your own provider accounts'],
-    media: { type: 'image', src: '/media/settings.webp', alt: 'The Settings page with provider selector, output folder and encrypted API key fields', caption: 'Scripted mock-up; no real keys are shown' }
+    media: { type: 'video', src: '/media/settings.mp4', poster: '/media/settings-poster.webp', label: 'Switching the text provider and saving an API key in Settings', caption: 'Scripted mock-up; the key shown is a placeholder' }
   },
   {
     n: '05', title: 'Light, dark, or follow the system.',

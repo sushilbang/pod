@@ -113,7 +113,7 @@ async function stills() {
   win.destroy();
 }
 
-async function clip(name, fps, total, timeline, theme = 'light') {
+async function clipFrames(name, fps, total, timeline, theme = 'light') {
   const dir = path.join(out, 'frames', name); fs.mkdirSync(dir, { recursive: true });
   const { win, run } = await openScene(theme);
   const started = Date.now();
@@ -127,8 +127,9 @@ async function clip(name, fps, total, timeline, theme = 'light') {
   win.destroy();
 }
 
-async function clips() {
+async function clips(only) {
   const progress = (at, message) => ({ at, run: run => emit(run, { event: 'progress', message }) });
+  const clip = (name, ...rest) => (!only || only.includes(name) ? clipFrames(name, ...rest) : undefined);
   await clip('create', 15, 205, [
     { at: 6, run: run => click(run, 'choose-pdf') },
     { from: 20, to: 66, frame: (run, n) => typeInto(run, direction.slice(0, Math.min(direction.length, Math.round((n + 1) * direction.length / 44)))) },
@@ -143,12 +144,38 @@ async function clips() {
     progress(164, 'Joining audio segments\u2026'),
     { at: 174, run: run => emit(run, { event: 'complete', title: 'Q3 strategy for product managers', audio_path: episodePath, audio_url: '' }) }
   ]);
-  await clip('themes', 15, 110, [
+  await clip('progress', 15, 180, [
+    { at: 0, run: async run => { await click(run, 'choose-pdf'); await sleep(120); await typeInto(run, direction); await click(run, 'generate'); } },
+    progress(8, 'Reading your PDF…'),
+    progress(26, 'Summarizing the document…'),
+    progress(48, 'Writing the two voice script…'),
+    progress(70, 'Generating speech 3 of 24…'),
+    progress(82, 'Generating speech 8 of 24…'),
+    progress(94, 'Generating speech 13 of 24…'),
+    progress(106, 'Generating speech 18 of 24…'),
+    progress(118, 'Generating speech 24 of 24…'),
+    progress(130, 'Joining audio segments…'),
+    { at: 142, run: run => emit(run, { event: 'complete', title: 'Q3 strategy for product managers', audio_path: episodePath, audio_url: '' }) }
+  ]);
+  await clip('library', 15, 130, [
+    { at: 0, run: async run => { await run('window.__mock.setEpisodes(false); true'); await view(run, 'podcasts'); } },
+    { at: 34, run: async run => { await run('window.__mock.setEpisodes(true); true'); await emit(run, { event: 'complete', title: 'Q3 strategy for product managers', audio_path: episodePath, audio_url: '' }); } },
+    { from: 68, to: 98, frame: (run, n) => run(`window.scrollTo(0, ${Math.round((n + 1) * 14)}); true`) }
+  ]);
+  await clip('settings', 15, 170, [
+    { at: 0, run: run => view(run, 'settings') },
+    { at: 22, run: run => run(`(() => { const s = document.getElementById('provider'); s.value = 'openai'; s.dispatchEvent(new Event('change')); })(); true`) },
+    { at: 46, run: run => run(`(() => { const s = document.getElementById('provider'); s.value = 'anthropic'; s.dispatchEvent(new Event('change')); })(); true`) },
+    { from: 62, to: 92, frame: (run, n) => run(`window.scrollTo(0, ${Math.round((n + 1) * 8)}); true`) },
+    { from: 96, to: 126, frame: (run, n) => run(`document.getElementById('anthropic-key').value = ${JSON.stringify('sk-ant-demo-0000000000000000'.slice(0, Math.round((n + 1) * 28 / 30)))}; true`) },
+    { at: 132, run: run => click(run, 'save-settings') }
+  ]);
+  await clip('themes', 15, 100, [
     { at: 0, run: run => view(run, 'podcasts') },
-    { at: 26, run: run => click(run, 'theme-toggle') },
-    { at: 50, run: run => view(run, 'settings') },
-    { at: 68, run: run => click(run, 'theme-toggle') },
-    { at: 88, run: run => view(run, 'chat') }
+    { at: 10, run: run => click(run, 'theme-toggle') },
+    { at: 34, run: run => view(run, 'settings') },
+    { at: 52, run: run => click(run, 'theme-toggle') },
+    { at: 72, run: run => view(run, 'chat') }
   ]);
 }
 
@@ -158,7 +185,7 @@ app.whenReady().then(async () => {
   const only = process.argv[3];
   if (!only || only === 'icons') await renderIcons();
   if (!only || only === 'stills') await stills();
-  if (!only || only === 'clips') await clips();
+  if (!only || only === 'clips') await clips(process.argv[4] ? process.argv[4].split(',') : undefined);
   app.quit();
 }).catch(error => { console.error(error); app.exit(1); });
 

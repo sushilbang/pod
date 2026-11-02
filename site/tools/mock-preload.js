@@ -4,6 +4,7 @@ const { contextBridge } = require('electron');
 
 const listeners = [];
 const episodes = [
+  ['Q3 strategy for product managers', '2026-10-30T10:20:00Z'],
   ['Why retrieval beats fine-tuning', '2026-10-28T09:14:00Z'],
   ['Inside the Q3 product roadmap', '2026-10-26T16:40:00Z'],
   ['Index funds for beginners', '2026-10-21T11:05:00Z'],
@@ -20,7 +21,14 @@ let showEpisodes = true;
 
 contextBridge.exposeInMainWorld('pod', {
   getSettings: async () => ({ ...settings }),
-  saveSettings: async update => { if (update?.provider) settings.provider = update.provider; return true; },
+  saveSettings: async update => {
+    if (update?.provider) settings.provider = update.provider;
+    if (update?.googleKey) settings.hasGoogleKey = true;
+    if (update?.openaiKey) settings.hasOpenaiKey = true;
+    if (update?.anthropicKey) settings.hasAnthropicKey = true;
+    if (update?.elevenlabsKey) settings.hasElevenlabsKey = true;
+    return true;
+  },
   clearKeys: async () => true,
   selectPdf: async () => 'C:\\Documents\\Q3-product-strategy.pdf',
   selectFolder: async () => settings.outputDir,
