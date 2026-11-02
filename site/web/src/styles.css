@@ -91,10 +91,10 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .wave i { display: block; width: clamp(3px, 0.55vw, 7px); height: 100%; border-radius: 999px; background: var(--blue); transform: scaleY(0.4); will-change: transform; }
 .wave i:nth-child(3n) { background: var(--ink); }
 .wave i:nth-child(5n) { background: var(--blue-light); }
-.hero .frame { box-shadow: 0 40px 80px -40px #0a0b0f55; }
 
-/* Browser-style frame */
-.frame { margin: 0; background: var(--white); border: 1px solid var(--ink); border-radius: 1rem; overflow: hidden; box-shadow: 0 24px 60px -30px #0a0b0f55; }
+/* Browser-style frame. The soft blue "blur border" is a static box-shadow stack (halo ring + blurred glow),
+   so it is painted once and costs nothing while the clip plays. */
+.frame { margin: 0; background: var(--white); border: 1px solid var(--ink); border-radius: 1rem; overflow: hidden; box-shadow: 0 0 0 0.5rem #2358ff12, 0 0 0 0.55rem #2358ff1f, 0 0 2.75rem 0.4rem #2358ff40, 0 2rem 4rem -1.5rem #0a0b0f4d; }
 .frame-bar { display: flex; align-items: center; gap: 0.4rem; height: 2.25rem; padding: 0 0.9rem; background: var(--ink); color: #c9d2e6; }
 .frame-bar i { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: #ffffff30; }
 .frame-bar i:first-child { background: var(--blue-light); }
