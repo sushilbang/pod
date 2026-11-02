@@ -95,12 +95,11 @@ function Faq() {
   );
 }
 
-function Frame({ children, caption }) {
+function Frame({ children }) {
   return (
     <figure className="frame" data-media>
       <div className="frame-bar" aria-hidden="true"><i /><i /><i /><span>POD Studio</span></div>
       <div className="frame-body">{children}</div>
-      <figcaption>{caption}</figcaption>
     </figure>
   );
 }
@@ -110,31 +109,31 @@ const features = [
     n: '01', title: 'Drop in a PDF. Describe the episode.',
     body: 'Attach any text-based PDF and say how it should sound: who it is for, what tone to take, what to end on. Leave the box empty and POD makes a sensible two-host episode on its own.',
     points: ['Reads up to the first 40,000 characters of the document', 'Direction of up to 2,000 characters, entirely optional', 'Your original PDF is never modified'],
-    media: { type: 'video', src: '/media/create.mp4', poster: '/media/create-poster.webp', label: 'Attaching a PDF, typing a direction and producing an episode', caption: 'Scripted mock-up of the real interface' }
+    media: { type: 'video', src: '/media/create.mp4', poster: '/media/create-poster.webp', label: 'Attaching a PDF, typing a direction and producing an episode' }
   },
   {
     n: '02', title: 'Watch it get made, stage by stage.',
     body: 'While POD works, the session panel shows exactly where it is: reading, scripting, voicing or exporting. When the episode is ready you can play it right inside the conversation.',
     points: ['A dialogue of about 1,200 words between Dorothy and Will', 'Every line is voiced separately for natural turn-taking', 'FFmpeg joins the clips without re-encoding'],
-    media: { type: 'video', src: '/media/progress.mp4', poster: '/media/progress-poster.webp', label: 'The session panel moving through read, script, audio and export until the episode appears', caption: 'Scripted mock-up: no real document or API call' }
+    media: { type: 'video', src: '/media/progress.mp4', poster: '/media/progress-poster.webp', label: 'The session panel moving through read, script, audio and export until the episode appears' }
   },
   {
     n: '03', title: 'A library that lives on your disk.',
     body: 'Every episode lands as an MP3 plus a plain-text script in a folder you choose. The Podcasts page lists them, plays them, and opens the file in Explorer with one click.',
     points: ['Defaults to your Music folder, change it any time', 'Matching MP3 and script pairs are picked up automatically', 'No account, no cloud copy, nothing to sync'],
-    media: { type: 'video', src: '/media/library.mp4', poster: '/media/library-poster.webp', label: 'The Podcasts library starting empty and filling with episodes, then scrolling through them', caption: 'Scripted mock-up with sample episodes' }
+    media: { type: 'video', src: '/media/library.mp4', poster: '/media/library-poster.webp', label: 'The Podcasts library starting empty and filling with episodes, then scrolling through them' }
   },
   {
     n: '04', title: 'Bring your own AI accounts.',
     body: 'Pick Google Gemini, OpenAI or Anthropic to write the script, and ElevenLabs for the voices. Keys are encrypted by Windows on your machine and used only for the render you start.',
     points: ['Switch script providers without touching your PDF', 'No sign-up and no POD server in between', 'Generation is billed by your own provider accounts'],
-    media: { type: 'video', src: '/media/settings.mp4', poster: '/media/settings-poster.webp', label: 'Switching the text provider and saving an API key in Settings', caption: 'Scripted mock-up; the key shown is a placeholder' }
+    media: { type: 'video', src: '/media/settings.mp4', poster: '/media/settings-poster.webp', label: 'Switching the text provider and saving an API key in Settings' }
   },
   {
     n: '05', title: 'Light, dark, or follow the system.',
     body: 'POD ships in white, black and blue. It follows your Windows theme by default, and a single toggle in the header lets you override it. The choice is remembered.',
     points: ['Clean, high-contrast type at a comfortable size', 'Keyboard friendly with visible focus states', 'Honors reduced-motion preferences'],
-    media: { type: 'video', src: '/media/themes.mp4', poster: '/media/themes-poster.webp', label: 'Toggling between light and dark themes across pages', caption: 'Scripted mock-up of the real interface' }
+    media: { type: 'video', src: '/media/themes.mp4', poster: '/media/themes-poster.webp', label: 'Toggling between light and dark themes across pages' }
   }
 ];
 
@@ -153,7 +152,7 @@ const faqs = [
   ['Why does Windows show a SmartScreen warning?', 'The portable build is not code-signed yet, so SmartScreen may say it does not recognise the app. Compare the SHA-256 above with your download, then choose More info and Run anyway if it matches.'],
   ['What kind of PDF works best?', 'A text-based PDF with selectable text and clear headings. Scanned or image-only PDFs need OCR first, and only the first 40,000 extracted characters are used.'],
   ['Is there a Mac or Linux version?', 'Not yet. The packaged download is Windows 10/11 x64 only.'],
-  ['Are the screenshots real?', 'They are scripted mock-ups. They run the app’s real interface and stylesheet in a test window with sample episodes and no real document, keys or API calls, which is why every caption says so.']
+  ['Are the screenshots real?', 'They are scripted mock-ups. They run the app’s real interface and stylesheet in a test window with sample episodes and no real document, keys or API calls, which is why the page says so beneath the hero and at the end of the features.']
 ];
 
 export default function App() {
@@ -225,8 +224,8 @@ export default function App() {
             <figure className="frame hero-shot">
               <div className="frame-bar" aria-hidden="true"><i /><i /><i /><span>POD Studio</span></div>
               <div className="frame-body"><Clip eager src="/media/hero.mp4" poster="/media/hero-poster.webp" label="POD Studio turning a PDF into a finished episode: attach, create, stage progress, then an audio player" /></div>
-              <figcaption>Scripted mock-up of the real interface, not a recording of a live run</figcaption>
             </figure>
+            <p className="shot-note">Scripted mock-up of the real interface, not a recording of a live run.</p>
           </div>
         </section>
 
@@ -241,7 +240,7 @@ export default function App() {
           <div className="wrap">
             <p className="eyebrow" data-reveal>Features</p>
             <h2 data-reveal>Everything between a PDF and a podcast, in one window.</h2>
-            <p className="section-lede" data-reveal>The captures below are scripted mock-ups rendered from the app’s real interface, so you can see the product without any private documents or API keys on screen.</p>
+            <p className="section-lede" data-reveal>Attach a PDF, follow each stage, keep your library on disk, bring your own keys, and pick a theme. Here is each part in motion.</p>
           </div>
           <div className="wrap rows">
             {features.map((f, i) => (
@@ -252,13 +251,16 @@ export default function App() {
                   <p data-reveal>{f.body}</p>
                   <ul data-reveal>{f.points.map(p => <li key={p}>{p}</li>)}</ul>
                 </div>
-                <Frame caption={f.media.caption}>
+                <Frame>
                   {f.media.type === 'video'
                     ? <Clip src={f.media.src} poster={f.media.poster} label={f.media.label} />
                     : <img src={f.media.src} alt={f.media.alt} width="1600" height="1000" loading="lazy" decoding="async" />}
                 </Frame>
               </article>
             ))}
+          </div>
+          <div className="wrap">
+            <p className="shot-note" data-reveal>All clips above are scripted mock-ups of the app’s real interface, with sample episodes and a placeholder key. No real document or API call is shown.</p>
           </div>
         </section>
 
