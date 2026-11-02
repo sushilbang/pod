@@ -1,13 +1,14 @@
 {
   "name": "pod-desktop",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "private": true,
   "description": "Local PDF to podcast desktop app",
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
     "test": ".venv\\Scripts\\python.exe -m unittest discover -s tests",
-    "package": "node scripts/package.js"
+    "package": "node scripts/package.js",
+    "package:portable": "electron-builder --win portable --config electron-builder.yml"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0"

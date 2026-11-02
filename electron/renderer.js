@@ -167,6 +167,19 @@ async function loadPodcasts() {
   }
 }
 
+function syncThemeToggle() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  $('theme-toggle').setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+}
+
+$('theme-toggle').addEventListener('click', () => {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('pod-theme', next); } catch { /* storage unavailable */ }
+  syncThemeToggle();
+});
+syncThemeToggle();
+
 document.querySelectorAll('[data-view]').forEach(button => {
   button.addEventListener('click', () => setView(button.dataset.view));
 });

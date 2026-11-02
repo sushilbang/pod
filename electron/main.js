@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, nativeTheme, safeStorage, shell } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -102,7 +102,8 @@ function ffmpegPath() {
 function createWindow() {
   window = new BrowserWindow({
     width: 1180, height: 820, minWidth: 760, minHeight: 600,
-    backgroundColor: '#f4f4f2',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#0b0d12' : '#f5f7fb',
+    icon: path.join(__dirname, 'assets', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   window.setMenuBarVisibility(false);

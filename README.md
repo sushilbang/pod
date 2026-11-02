@@ -13,7 +13,7 @@ POD organizes the workflow into four focused areas:
 - **Docs** explains setup, source document requirements, prompt guidance, privacy behavior, provider usage, and common errors inside the application.
 - **Settings** manages the active text provider, encrypted API credentials, and the local output destination.
 
-The interface uses a minimal black and white visual system with Poppins typography. Its compact navigation and page headings leave most of the window available for the conversation, episode library, and documentation.
+The interface uses a white, black and blue visual system in light and dark themes. It follows the system theme until the user picks one with the header toggle. Typography is Space Grotesk for headings, Manrope for interface text and JetBrains Mono for labels, all bundled locally under the SIL Open Font License. Compact navigation and page headings leave most of the window available for the conversation, episode library, and documentation.
 
 ## Generation workflow
 
@@ -134,3 +134,7 @@ Failures are returned to the Chat interface as readable status messages. The wor
 - The generated script targets roughly 1,200 words, but final length depends on the selected model.
 - The current production format uses two fixed hosts, Dorothy and Will.
 - Generation requires network access to the selected AI services, while settings, the episode index, scripts, and audio are stored locally.
+
+## Download website
+
+`site/` holds the marketing and download site: a Vite + React page in `site/web` that builds into `site/public`, served by a Cloudflare Worker (`site/worker.js`) that streams the portable `.exe` from an R2 bucket. Build the app first with `npm run package:portable` (needs `build/worker/pod-worker.exe`), then `node site/tools/release-info.js` records the file size and SHA-256 for the page. The screenshots and clips on the site are scripted mock-ups rendered by `site/tools/capture.js` from the real interface.

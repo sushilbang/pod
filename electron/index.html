@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; media-src file:">
   <title>POD Studio</title>
+  <meta name="color-scheme" content="light dark">
   <link rel="stylesheet" href="styles.css">
+  <script src="theme.js"></script>
   <script defer src="renderer.js"></script>
 </head>
 <body>
@@ -17,7 +19,10 @@
         <button class="nav-button" type="button" data-view="podcasts">Podcasts <span id="podcast-count" class="nav-count" hidden>0</span></button>
         <button class="nav-button" type="button" data-view="docs">Docs</button>
       </nav>
-      <button class="settings-link" id="open-settings" type="button" data-view="settings" aria-label="Open settings"><span class="settings-glyph" aria-hidden="true"></span><span>Settings</span></button>
+      <div class="header-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Toggle light / dark"><span class="theme-icon" aria-hidden="true"></span></button>
+        <button class="settings-link" id="open-settings" type="button" data-view="settings" aria-label="Open settings"><span class="settings-glyph" aria-hidden="true"></span><span>Settings</span></button>
+      </div>
     </header>
 
     <main>

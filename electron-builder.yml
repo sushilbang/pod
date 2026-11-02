@@ -1,0 +1,25 @@
+# Portable Windows build used for the download site:
+#   npx electron-builder --win portable --config electron-builder.yml
+# Needs build/worker/pod-worker.exe first (npm run package builds it with PyInstaller).
+appId: app.pod.desktop
+productName: POD
+electronDist: node_modules/electron/dist
+directories:
+  output: release
+files:
+  - electron/**/*
+  - backend/tasks.py
+  - package.json
+  - node_modules/ffmpeg-static/**/*
+asarUnpack:
+  - backend/tasks.py
+  - node_modules/ffmpeg-static/**/*
+extraResources:
+  - from: build/worker/pod-worker.exe
+    to: pod-worker.exe
+win:
+  icon: electron/assets/icon.ico
+  target:
+    - target: portable
+      arch: x64
+  artifactName: POD-${version}-win-x64-portable.${ext}
