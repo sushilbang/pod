@@ -35,17 +35,25 @@ function Words({ text }) {
 function Clip({ src, poster, label }) {
   const ref = useRef(null);
   const [reduced] = useState(() => matchMedia(reducedQuery).matches);
+  // Reduced-motion visitors and browsers that block autoplay get an explicit Play button instead of a still image.
+  const [needsTap, setNeedsTap] = useState(reduced);
   useEffect(() => {
     const video = ref.current;
     if (reduced || !video) return undefined;
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) video.play().catch(() => {});
+      if (entry.isIntersecting) video.play().then(() => setNeedsTap(false)).catch(() => setNeedsTap(true));
       else video.pause();
-    }, { threshold: 0.4 });
+    }, { threshold: 0.25 });
     observer.observe(video);
     return () => observer.disconnect();
   }, [reduced]);
-  return <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" controls={reduced} aria-label={label} />;
+  const start = () => { ref.current?.play().then(() => setNeedsTap(false)).catch(() => {}); };
+  return (
+    <div className="clip">
+      <video ref={ref} src={src} poster={poster} muted loop playsInline preload="metadata" controls={reduced} aria-label={label} />
+      {needsTap && <button type="button" className="clip-play" onClick={start}><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor" /></svg>Play demo</button>}
+    </div>
+  );
 }
 
 function Frame({ children, caption }) {

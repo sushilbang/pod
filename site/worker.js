@@ -20,11 +20,29 @@ function parseRange(header, size) {
   return start <= end && start < size ? { offset: start, length: end - start + 1 } : 'invalid';
 }
 
+// Static assets answer Range requests with 200, which Safari refuses for video. The demo clips are
+// small, so read the asset and answer ranges here.
+async function serveClip(request, env) {
+  const asset = await env.ASSETS.fetch(new Request(request.url, { method: 'GET' }));
+  if (!asset.ok) return asset;
+  const bytes = await asset.arrayBuffer();
+  const headers = new Headers(asset.headers);
+  headers.set('accept-ranges', 'bytes');
+  headers.delete('content-encoding');
+  const range = parseRange(request.headers.get('range'), bytes.byteLength);
+  if (range === 'invalid') { headers.set('content-range', `bytes */${bytes.byteLength}`); return new Response(null, { status: 416, headers }); }
+  const slice = range ? bytes.slice(range.offset, range.offset + range.length) : bytes;
+  headers.set('content-length', String(slice.byteLength));
+  if (range) headers.set('content-range', `bytes ${range.offset}-${range.offset + range.length - 1}/${bytes.byteLength}`);
+  return new Response(request.method === 'HEAD' ? null : slice, { status: range ? 206 : 200, headers });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method !== 'GET' && request.method !== 'HEAD') return reply(405, 'Method not allowed', { allow: 'GET, HEAD' });
 
     const url = new URL(request.url);
+    if (url.pathname.startsWith('/media/')) return serveClip(request, env);
     let key;
     try { key = decodeURIComponent(url.pathname.replace(/^\/download\//, '')); } catch { return reply(400, 'Bad request'); }
     if (!FILE.test(key)) return reply(404, 'Not found');
