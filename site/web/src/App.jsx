@@ -26,10 +26,27 @@ function Arrow() {
   return <svg className="arrow" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m0 0-4.5-4.5M15 10l-4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
-function Words({ text }) {
+// Words listed in `script` are set in the hand-lettered italic.
+function Words({ text, script = [] }) {
   return text.split(' ').map((word, i) => (
-    <span key={i}><span className="word"><span className="word-in">{word}</span></span>{' '}</span>
+    <span key={i}><span className="word"><span className={`word-in${script.includes(word) ? ' word-script' : ''}`}>{word}</span></span>{' '}</span>
   ));
+}
+
+// Starburst sticker: a 16-point star behind the label.
+const burstPoints = Array.from({ length: 32 }, (_, i) => {
+  const angle = (i * Math.PI) / 16;
+  const radius = i % 2 ? 43 : 50;
+  return `${(50 + radius * Math.cos(angle)).toFixed(1)},${(50 + radius * Math.sin(angle)).toFixed(1)}`;
+}).join(' ');
+
+function Burst({ className = '', children }) {
+  return (
+    <span className={`sticker burst ${className}`.trim()}>
+      <svg viewBox="0 0 100 100" aria-hidden="true"><polygon points={burstPoints} /></svg>
+      <span>{children}</span>
+    </span>
+  );
 }
 
 function Clip({ src, poster, label, eager = false }) {
@@ -131,7 +148,7 @@ const features = [
   },
   {
     n: '05', title: 'Light, dark, or follow the system.',
-    body: 'POD ships in white, black and blue. It follows your Windows theme by default, and a single toggle in the header lets you override it. The choice is remembered.',
+    body: 'POD ships as a cream-and-tomato diner by day and the same diner after hours. It follows your Windows theme by default, and a single toggle in the header lets you override it. The choice is remembered.',
     points: ['Clean, high-contrast type at a comfortable size', 'Keyboard friendly with visible focus states', 'Honors reduced-motion preferences'],
     media: { type: 'video', src: '/media/themes.mp4', poster: '/media/themes-poster.webp', label: 'Toggling between light and dark themes across pages' }
   }
@@ -199,28 +216,29 @@ export default function App() {
   };
 
   return (
-    <div ref={root}>
+    <div ref={root} className="sheet">
       <a className="skip" href="#main">Skip to content</a>
       <header className="nav">
         <a className="nav-brand" href="#top" aria-label="POD Studio home"><Logo /><span>POD Studio</span></a>
         <nav aria-label="Main"><a href="#features">Features</a><a href="#how">How it works</a><a href="#faq">FAQ</a></nav>
-        <a className="btn btn-blue btn-sm" href="#download">Download</a>
+        <a className="btn btn-yellow btn-sm" href="#download">Download</a>
       </header>
 
       <main id="main">
         <section className="hero" id="top">
           <div className="wrap hero-copy">
             <p className="eyebrow hero-fade">Local-first desktop app for Windows</p>
-            <h1><Words text="Turn any PDF into a two-voice podcast." /></h1>
+            <h1><Words text="Turn any PDF into a two-voice podcast." script={['two-voice']} /></h1>
             <p className="lede hero-fade">POD Studio reads your document, writes a conversation between two hosts with the AI account you already have, and hands you an MP3 and the script. Your files and keys stay on your computer.</p>
             <div className="cta-row hero-fade">
-              <a className="btn btn-blue" href="#download">Download for Windows <Arrow /></a>
-              <a className="btn btn-ghost" href="#features">See what it does</a>
+              <a className="btn btn-yellow btn-lg" href="#download">Download for Windows <Arrow /></a>
+              <a className="btn btn-ghost btn-lg" href="#features">See what it does</a>
             </div>
             <p className="meta hero-fade">v{release.version} · Portable .exe · {sizeMb} · Windows 10/11 x64</p>
           </div>
           <div className="wave" aria-hidden="true">{Array.from({ length: 56 }, (_, i) => <i key={i} />)}</div>
-          <div className="wrap">
+          <div className="wrap hero-stage">
+            <Burst className="burst-tag hero-shot">Latest<br />v{release.version}</Burst>
             <figure className="frame hero-shot">
               <div className="frame-bar" aria-hidden="true"><i /><i /><i /><span>POD Studio</span></div>
               <div className="frame-body"><Clip eager src="/media/hero.mp4" poster="/media/hero-poster.webp" label="POD Studio turning a PDF into a finished episode: attach, create, stage progress, then an audio player" /></div>
@@ -280,25 +298,29 @@ export default function App() {
         </section>
 
         <section className="download" id="download">
-          <div className="wrap download-grid">
-            <div>
-              <p className="eyebrow eyebrow-light" data-reveal>Download</p>
+          <div className="grid-band">
+            <div className="wrap band-in">
+              <p className="eyebrow" data-reveal>Download</p>
               <h2 data-reveal>POD Studio for Windows</h2>
               <p className="download-lede" data-reveal>One portable file. No installer, no account. Download it, run it, and add your keys in Settings.</p>
-              <div data-reveal>
-                <a className="btn btn-blue btn-lg" href={downloadHref} download>Download .exe <Arrow /></a>
+              <div className="pill-stage" data-reveal>
+                <span className="sticker ticket"><b>No account</b><i>needed!</i></span>
+                <a className="btn btn-yellow btn-pill" href={downloadHref} download>Download .exe <Arrow /></a>
+                <Burst>Local-<br />first!</Burst>
               </div>
-              <dl className="specs" data-reveal>
-                <div><dt>Version</dt><dd>{release.version}</dd></div>
-                <div><dt>Size</dt><dd>{sizeMb}</dd></div>
-                <div><dt>Format</dt><dd>Portable .exe</dd></div>
-                <div><dt>Requires</dt><dd>Windows 10/11, 64-bit</dd></div>
-              </dl>
             </div>
+          </div>
+          <div className="wrap download-grid">
+            <dl className="specs" data-reveal>
+              <div><dt>Version</dt><dd>{release.version}</dd></div>
+              <div><dt>Size</dt><dd>{sizeMb}</dd></div>
+              <div><dt>Format</dt><dd>Portable .exe</dd></div>
+              <div><dt>Requires</dt><dd>Windows 10/11, 64-bit</dd></div>
+            </dl>
             <div className="verify" data-reveal>
               <p className="mono verify-label">SHA-256</p>
               <code className="hash" aria-label="SHA-256 checksum">{release.sha256}</code>
-              <button type="button" className="btn btn-outline-light btn-sm" onClick={copyHash}>{copied ? 'Copied' : 'Copy checksum'}</button>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={copyHash}>{copied ? 'Copied' : 'Copy checksum'}</button>
               <p className="verify-help">Check your download in PowerShell:</p>
               <code className="cmd">Get-FileHash .\{release.file} -Algorithm SHA256</code>
               <p className="verify-help">The build is not code-signed yet, so Windows SmartScreen may warn on first run. If the checksums match, choose <em>More info</em>, then <em>Run anyway</em>.</p>
@@ -318,9 +340,12 @@ export default function App() {
       </main>
 
       <footer className="foot">
-        <div className="wrap foot-in">
-          <a className="nav-brand" href="#top" aria-label="Back to top"><Logo size={24} /><span>POD Studio</span></a>
-          <p>This site sets no cookies and runs no analytics. Screenshots and clips are scripted mock-ups of the app’s real interface.</p>
+        <div className="wrap">
+          <p className="foot-note">This site sets no cookies and runs no analytics. Screenshots and clips are scripted mock-ups of the app’s real interface.</p>
+          <div className="foot-bottom">
+            <a className="foot-word" href="#top" aria-label="POD Studio, back to top">pod studio<Logo /></a>
+            <a className="btn btn-ghost btn-sm foot-top" href="#top">Back to top <Arrow /></a>
+          </div>
         </div>
       </footer>
     </div>

@@ -13,7 +13,7 @@ POD organizes the workflow into four focused areas:
 - **Docs** explains setup, source document requirements, prompt guidance, privacy behavior, provider usage, and common errors inside the application.
 - **Settings** manages the active text provider, encrypted API credentials, and the local output destination.
 
-The interface uses a white, black and blue visual system in light and dark themes. It follows the system theme until the user picks one with the header toggle. Typography is Space Grotesk for headings, Manrope for interface text and JetBrains Mono for labels, all bundled locally under the SIL Open Font License. Compact navigation and page headings leave most of the window available for the conversation, episode library, and documentation.
+The interface uses a retro diner visual system (cream, tomato red, mustard and ink, with chunky outlines and hard shadows) in light and dark themes. It follows the system theme until the user picks one with the header toggle. Typography is Space Grotesk for headings, Manrope for interface text, Source Serif 4 italic for hand-lettered accents and JetBrains Mono for labels, all bundled locally under the SIL Open Font License. Compact navigation and page headings leave most of the window available for the conversation, episode library, and documentation.
 
 ## Generation workflow
 
